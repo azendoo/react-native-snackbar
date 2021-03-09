@@ -63,6 +63,16 @@ export interface SnackBarOptions {
    * Action button configuration options.
    */
   action?: SnackbarAction;
+
+  /**
+   * Rtl the snackbar
+   * 
+   * [Android only, API 17+] Whether the Snackbar should render right-to-left 
+   * @requires `android:supportsRtl="true"`
+   * @see https://android-developers.googleblog.com/2013/03/native-rtl-support-in-android-42.html
+   * @see https://github.com/MortezaHeydari97/react-native-snackbar/blob/main/example
+   */
+  rtl?: boolean
 }
 
 /**
