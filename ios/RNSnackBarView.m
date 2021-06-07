@@ -29,6 +29,10 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
 @property(nonatomic, strong) UIColor *textColor;
 @property(nonatomic, strong) NSString *actionText;
 @property(nonatomic, strong) UIColor *actionTextColor;
+@property(nonatomic, strong) NSNumber *marginBottom;
+@property(nonatomic, strong) NSNumber *marginLeft;
+@property(nonatomic, strong) NSNumber *marginRight;
+@property(nonatomic, strong) NSArray<NSLayoutConstraint *> *verticalPaddingConstraints;
 @property(nonatomic, strong) void (^pendingCallback)();
 @property(nonatomic, strong) void (^callback)();
 
@@ -71,16 +75,6 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
 }
 
 - (void)buildView {
-    CGFloat topPadding = 14;
-    CGFloat bottomPadding = topPadding;
-
-    if (@available(iOS 11.0, *)) {
-        UIWindow *window = UIApplication.sharedApplication.keyWindow;
-
-        if (window.safeAreaInsets.bottom > bottomPadding)
-            bottomPadding = window.safeAreaInsets.bottom;
-    }
-
     self.backgroundColor = [UIColor colorWithRed:0.196078F
                                            green:0.196078F
                                             blue:0.196078F
@@ -104,13 +98,6 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
     [actionButton setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self addSubview:actionButton];
 
-    [self addConstraints:[NSLayoutConstraint
-                             constraintsWithVisualFormat:
-                                 [NSString stringWithFormat:@"V:|-%f-[textLabel]-%f-|", topPadding,
-                                                            bottomPadding]
-                                                 options:0
-                                                 metrics:nil
-                                                   views:@{@"textLabel" : textLabel}]];
     [self addConstraint:[NSLayoutConstraint constraintWithItem:actionButton
                                                      attribute:NSLayoutAttributeCenterY
                                                      relatedBy:NSLayoutRelationEqual
@@ -185,14 +172,38 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
     UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
     [keyWindow addSubview:self];
     [self setTranslatesAutoresizingMaskIntoConstraints:false];
-    [keyWindow addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[self(>=48)]|"
+    
+    // Set vertical padding
+    CGFloat topPadding = 14;
+    CGFloat bottomPadding = topPadding;
+    if (@available(iOS 11.0, *)) {
+        UIWindow *window = UIApplication.sharedApplication.keyWindow;
+
+        // If no bottom margin, increase bottom padding to size of safe area inset
+        if ([self.marginBottom integerValue] == 0 && window.safeAreaInsets.bottom > bottomPadding)
+            bottomPadding = window.safeAreaInsets.bottom;
+    }
+    NSLog([NSString stringWithFormat:@"V:|-%f-[textLabel]-%f-|", topPadding,
+           bottomPadding]);
+    if (self.verticalPaddingConstraints) // Remove old constraints
+        [self removeConstraints:self.verticalPaddingConstraints];
+    self.verticalPaddingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:|-%f-[textLabel]-%f-|", topPadding,
+                                                                     bottomPadding]
+                                                                            options:0
+                                                                            metrics:nil
+                                                                              views:@{@"textLabel" : textLabel}];
+    [self addConstraints:self.verticalPaddingConstraints];
+
+    // Set margins
+    [keyWindow addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:[self(>=48)]-%@-|", self.marginBottom]
                                                                       options:0
                                                                       metrics:nil
                                                                         views:@{@"self" : self}]];
-    [keyWindow addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[self]|"
+    [keyWindow addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:|-%@-[self]-%@-|", self.marginLeft, self.marginRight]
                                                                       options:0
                                                                       metrics:nil
                                                                         views:@{@"self" : self}]];
+
 
     self.transform = CGAffineTransformMakeTranslation(0, self.bounds.size.height);
     textLabel.alpha = 0;
@@ -252,6 +263,10 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
 
     NSNumber *numberOfLines = _pendingOptions[@"numberOfLines"];
     self.numberOfLines = [RCTConvert int:numberOfLines] ? [RCTConvert int:numberOfLines] : 2;
+    
+    self.marginBottom = _pendingOptions[@"marginBottom"] ? _pendingOptions[@"marginBottom"] : @(0);
+    self.marginLeft = _pendingOptions[@"marginLeft"] ? _pendingOptions[@"marginLeft"] : @(0);
+    self.marginRight = _pendingOptions[@"marginRight"] ? _pendingOptions[@"marginRight"] : @(0);
     
     id backgroundColor = _pendingOptions[@"backgroundColor"];
     self.backgroundColor = backgroundColor ? [RCTConvert UIColor:backgroundColor]
