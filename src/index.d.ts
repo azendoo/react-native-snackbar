@@ -43,6 +43,21 @@ export interface SnackBarOptions {
   duration?: number;
 
   /**
+   * Margin from bottom, defaults to 0.
+   */
+  marginBottom?: number;
+
+  /**
+   * Margin from left, defaults to 0.
+   */
+  marginLeft?: number;
+
+  /**
+   * Margin from right, defaults to 0.
+   */
+  marginRight?: number;
+
+  /**
    * Snackbar text color.
    * Accepts various forms of colors such as hex, literals, rgba, etc.
    */
