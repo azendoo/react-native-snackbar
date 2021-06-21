@@ -112,8 +112,6 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
         int numberOfLines = getOptionValue(options, "numberOfLines", 2);
         int textColor = getOptionValue(options, "textColor", Color.WHITE);
         boolean rtl = getOptionValue(options, "rtl", false);
-        int marginLeft = getOptionValue(options, "marginLeft", 0);
-        int marginRight = getOptionValue(options, "marginRight", 0);
         int marginBottom = getOptionValue(options, "marginBottom", 0);
         String fontFamily = getOptionValue(options, "fontFamily", null);
         Typeface font = null;
@@ -134,6 +132,12 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
             e.printStackTrace();
             return;
         }
+
+        snackbar.setAnimationMode(marginBottom == 0
+                ? 0 // Slide
+                : 1 // Fade
+        );
+
         View snackbarView = snackbar.getView();
 
         if (rtl && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -141,13 +145,7 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
             snackbarView.setTextDirection(View.TEXT_DIRECTION_RTL);
         }
 
-        FrameLayout.LayoutParams param = (FrameLayout.LayoutParams) snackbarView.getLayoutParams();
-        param.setMargins(
-            (int)convertDpToPixel(marginLeft ,snackbarView.getContext()),
-            0,
-            (int)convertDpToPixel(marginRight ,snackbarView.getContext()),
-            (int)convertDpToPixel(marginBottom ,snackbarView.getContext()));
-        snackbarView.setLayoutParams(param);
+        snackbarView.setTranslationY(-(convertDpToPixel(marginBottom, snackbarView.getContext())));
 
         TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
         snackbarText.setMaxLines(numberOfLines);

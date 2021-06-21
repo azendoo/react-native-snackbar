@@ -84,13 +84,11 @@ class Example extends Component {
 
         <TouchableOpacity
           onPress={() => Snackbar.show({
-            text: 'Use a margin to avoid covering navigational elements such as a tab bar.',
-            marginLeft: 5,
-            marginRight: 5,
-            marginBottom: 50,
+            text: 'Use a bottom margin to avoid covering navigational elements such as a tab bar.',
+            marginBottom: 500,
           })}
         >
-          <Text style={styles.button}>Snackbar with margin</Text>
+          <Text style={styles.button}>Snackbar with bottom margin</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => Snackbar.dismiss()}>

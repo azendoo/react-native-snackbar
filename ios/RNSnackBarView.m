@@ -30,8 +30,6 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
 @property(nonatomic, strong) NSString *actionText;
 @property(nonatomic, strong) UIColor *actionTextColor;
 @property(nonatomic, strong) NSNumber *marginBottom;
-@property(nonatomic, strong) NSNumber *marginLeft;
-@property(nonatomic, strong) NSNumber *marginRight;
 @property(nonatomic, strong) NSArray<NSLayoutConstraint *> *verticalPaddingConstraints;
 @property(nonatomic, strong) void (^pendingCallback)();
 @property(nonatomic, strong) void (^callback)();
@@ -199,21 +197,25 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
                                                                       options:0
                                                                       metrics:nil
                                                                         views:@{@"self" : self}]];
-    [keyWindow addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:|-%@-[self]-%@-|", self.marginLeft, self.marginRight]
+    [keyWindow addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[self]|"
                                                                       options:0
                                                                       metrics:nil
                                                                         views:@{@"self" : self}]];
 
-
-    self.transform = CGAffineTransformMakeTranslation(0, self.bounds.size.height);
+    // Snackbar will slide up from bottom, unless a bottom margin is set in which case we use a fade animation
+    self.transform = CGAffineTransformMakeTranslation(0, [self.marginBottom integerValue] == 0 ? self.bounds.size.height : 0);
     textLabel.alpha = 0;
     actionButton.alpha = 0;
+    if ([self.marginBottom integerValue] == 0) {
+        self.alpha = 0;
+    }
     self.state = RNSnackBarViewStatePresenting;
     [UIView animateWithDuration:ANIMATION_DURATION
         animations:^{
           self.transform = CGAffineTransformIdentity;
           textLabel.alpha = 1;
           actionButton.alpha = 1;
+          self.alpha = 1;
         }
         completion:^(BOOL finished) {
           self.state = RNSnackBarViewStateDisplayed;
@@ -238,7 +240,8 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
     self.state = RNSnackBarViewStateDismissing;
     [UIView animateWithDuration:ANIMATION_DURATION
         animations:^{
-          self.transform = CGAffineTransformMakeTranslation(0, self.bounds.size.height);
+          self.transform = CGAffineTransformMakeTranslation(0, [self.marginBottom integerValue] == 0 ? self.bounds.size.height : 0);
+          self.alpha = 0;
         }
         completion:^(BOOL finished) {
           self.state = RNSnackBarViewStateDismissed;
@@ -265,8 +268,6 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
     self.numberOfLines = [RCTConvert int:numberOfLines] ? [RCTConvert int:numberOfLines] : 2;
     
     self.marginBottom = _pendingOptions[@"marginBottom"] ? _pendingOptions[@"marginBottom"] : @(0);
-    self.marginLeft = _pendingOptions[@"marginLeft"] ? _pendingOptions[@"marginLeft"] : @(0);
-    self.marginRight = _pendingOptions[@"marginRight"] ? _pendingOptions[@"marginRight"] : @(0);
     
     id backgroundColor = _pendingOptions[@"backgroundColor"];
     self.backgroundColor = backgroundColor ? [RCTConvert UIColor:backgroundColor]
