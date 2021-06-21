@@ -5,9 +5,12 @@ import android.graphics.Typeface;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.os.Build;
+import android.content.Context;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.facebook.react.bridge.Callback;
@@ -109,6 +112,7 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
         int numberOfLines = getOptionValue(options, "numberOfLines", 2);
         int textColor = getOptionValue(options, "textColor", Color.WHITE);
         boolean rtl = getOptionValue(options, "rtl", false);
+        int marginBottom = getOptionValue(options, "marginBottom", 0);
         String fontFamily = getOptionValue(options, "fontFamily", null);
         Typeface font = null;
         if (fontFamily != null) {
@@ -128,12 +132,20 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
             e.printStackTrace();
             return;
         }
+
+        snackbar.setAnimationMode(marginBottom == 0
+                ? 0 // Slide
+                : 1 // Fade
+        );
+
         View snackbarView = snackbar.getView();
 
         if (rtl && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             snackbarView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
             snackbarView.setTextDirection(View.TEXT_DIRECTION_RTL);
         }
+
+        snackbarView.setTranslationY(-(convertDpToPixel(marginBottom, snackbarView.getContext())));
 
         TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
         snackbarText.setMaxLines(numberOfLines);
@@ -177,6 +189,10 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
         }
 
         snackbar.show();
+    }
+
+    public static float convertDpToPixel(float dp, Context context){
+        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     /**
